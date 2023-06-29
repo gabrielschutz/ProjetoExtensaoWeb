@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgres://postgres:@192.168.0.102:5433/postgres"
+}
+
+model Usuario {
+  id        Int     @id @default(autoincrement())
+  username  String  @unique
+  nome      String
+  role      Role    @default(GERENTE)
+  senha     String
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+}
+
+model IOT {
+  id      Int      @id @default(autoincrement())
+  nome    String
+  uuid    String   @unique
+  ip      String
+  status  status   @default(Manutencao)
+  maquina Maquina?
+}
+
+model Maquina {
+  id      Int    @id @default(autoincrement())
+  nome    String @unique
+  status  status @default(Manutencao)
+  iotUUID String @unique
+  iot     IOT    @relation(fields: [iotUUID], references: [uuid])
+  linha   Linha? @relation(fields: [linhaId], references: [id])
+  linhaId Int?
+}
+
+model Linha {
+  id        Int       @id @default(autoincrement())
+  status    status    @default(Manutencao)
+  nome      String    @unique
+  unidadeId Int
+  unidade   Unidade   @relation(fields: [unidadeId], references: [id])
+  maquinas  Maquina[]
+}
+
+model Unidade {
+  id       Int       @id @default(autoincrement())
+  nome     String    @unique
+  endereco String
+  linhas   Linha[]
+  usuarios Usuario[]
+}
+
+enum status {
+  Ativo
+  Manutencao
+  Atencao
+}
+
+enum Role {
+  GERENTE
+  ADMIN
+}
